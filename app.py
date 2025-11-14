@@ -7,6 +7,7 @@ from docx.shared import Inches
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
+
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "uploads"
@@ -17,13 +18,13 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 
 # -------------------------------------------------------
-# Set table borders
+# Add table borders
 # -------------------------------------------------------
 def set_borders(table):
     tbl = table._element
     borders = OxmlElement("w:tblBorders")
     for edge in ("top", "left", "bottom", "right", "insideH", "insideV"):
-        elem = OxmlElement(f"w:{edge}")
+        elem = OxmlElement(f"w:%s" % edge)
         elem.set(qn("w:val"), "single")
         elem.set(qn("w:sz"), "10")
         elem.set(qn("w:color"), "000000")
@@ -32,25 +33,25 @@ def set_borders(table):
 
 
 # -------------------------------------------------------
-# Add header + logo
+# Header with logo + blue box
 # -------------------------------------------------------
 def add_survey_header(doc, header_text):
 
-    # ---- Add Logo ----
+    # Add logo
     try:
         p_logo = doc.add_paragraph()
-        p_logo.alignment = 1   # center
+        p_logo.alignment = 1
         run = p_logo.add_run()
         run.add_picture("static/logo.jpg", width=Inches(3))
     except:
-        print("Logo missing. Add logo.jpg into static/ folder.")
+        print("Logo missing (static/logo.jpg).")
 
-    # ---- Blue Header Box ----
+    # Blue header table
     table = doc.add_table(rows=1, cols=1)
 
-    # Blue background
-    shade = OxmlElement('w:shd')
-    shade.set(qn('w:fill'), "B7D3F2")  # Light blue
+    shade = OxmlElement("w:shd")
+    shade.set(qn("w:fill"), "B7D3F2")
+
     tcPr = table.rows[0].cells[0]._tc.get_or_add_tcPr()
     tcPr.append(shade)
 
@@ -58,48 +59,52 @@ def add_survey_header(doc, header_text):
 
     cell = table.rows[0].cells[0]
     p = cell.paragraphs[0]
-    p.alignment = 1  # center
+    p.alignment = 1
 
     for line in header_text.split("\n"):
         r = p.add_run(line)
         r.bold = True
         p.add_run("\n")
 
-    doc.add_paragraph()  # spacing
+    doc.add_paragraph()
 
 
 # -------------------------------------------------------
-# Extract a teacher table
+# Extract teacher rows — IGNORE "Responses" column
 # -------------------------------------------------------
 def extract_teacher_data(tb, question, campus, data):
-    headers = [c.text.strip().lower() for c in tb.rows[0].cells]
 
-    if headers == ["id", "responses"]:
+    col_count = len(tb.rows[0].cells)
+
+    # Skip feedback tables
+    header = [c.text.strip().lower() for c in tb.rows[0].cells]
+    if header == ["id", "responses"]:
         return False
 
-    name_col = None
-    value_col = None
-    is_ranking = False
+    # ---------------------- Q1–Q7 (3-column tables) ----------------------
+    if col_count == 3:
+        name_col = 0
+        percentage_col = 2  # responses column ignored
+        is_ranking = False
 
-    for i, h in enumerate(headers):
-        if "name" in h:
-            name_col = i
-        if "percentage" in h:
-            value_col = i
-        if "ranking" in h:
-            value_col = i
-            is_ranking = True
+    # ---------------------- Q8 (Ranking) ----------------------
+    elif col_count == 2:
+        name_col = 0
+        percentage_col = 1
+        is_ranking = True
 
-    if name_col is None or value_col is None:
+    else:
         return False
 
+    # Extract rows
     for row in tb.rows[1:]:
         name = row.cells[name_col].text.strip()
         if not name or "none" in name.lower():
             continue
 
-        raw = row.cells[value_col].text.strip().replace("%", "")
+        raw = row.cells[percentage_col].text.strip().replace("%", "")
 
+        # Ranking (no %)
         if question == "Q#8" or is_ranking:
             value = raw
         else:
@@ -112,15 +117,19 @@ def extract_teacher_data(tb, question, campus, data):
 
 
 # -------------------------------------------------------
-# Detect campus from text
+# Detect campus
 # -------------------------------------------------------
 def detect_campus(text):
+    m = re.search(r"IG-III\s+([A-Za-z]+)\s*-\s*Boys", text, re.IGNORECASE)
+    if m:
+        return m.group(1).strip()
+
     m = re.search(r"IG-II\s+([A-Za-z]+)\s*-\s*Boys", text, re.IGNORECASE)
     return m.group(1).strip() if m else None
 
 
 # -------------------------------------------------------
-# MAIN DOCX PROCESSING
+# MAIN PROCESSOR
 # -------------------------------------------------------
 def process_docx(path):
 
@@ -129,16 +138,13 @@ def process_docx(path):
     data = defaultdict(lambda: defaultdict(dict))
     question_text = {}
     found_campuses = set()
-
     tables = doc.tables
     paragraphs = doc.paragraphs
     table_index = 0
-
     current_campus = None
-    current_question = None
 
     # ---------------------------------------------------
-    # CLEAN HEADER EXTRACTION
+    # Extract clean survey header
     # ---------------------------------------------------
     valid_header_keywords = [
         "learners",
@@ -146,17 +152,18 @@ def process_docx(path):
         "igcse boys",
         "college campus",
         "igcse-ii",
-        "igcse ii"
+        "igcse iii",
+        "igcse-iii"
     ]
 
     survey_header_lines = []
 
     for p in paragraphs:
-        t = p.text.strip()
-        low = t.lower()
+        txt = p.text.strip()
+        low = txt.lower()
 
         if any(k in low for k in valid_header_keywords):
-            survey_header_lines.append(t)
+            survey_header_lines.append(txt)
             continue
 
         if low.startswith("q#1"):
@@ -165,23 +172,24 @@ def process_docx(path):
     survey_header = "\n".join(survey_header_lines)
 
     # ---------------------------------------------------
-    # Extract ALL Q# + table pairs
+    # Extract all questions + tables
     # ---------------------------------------------------
     for p in paragraphs:
         txt = p.text.strip()
 
-        camp = detect_campus(txt)
-        if camp:
-            current_campus = camp
-            found_campuses.add(camp)
+        # Detect campus
+        campus = detect_campus(txt)
+        if campus:
+            current_campus = campus
+            found_campuses.add(campus)
 
-        # Match Q# lines
+        # Detect Q#
         m = re.match(r"(Q#\d+)\s*[:\-\.]?\s*(.*)", txt)
         if m:
             qnum = m.group(1)
             question_text[qnum] = txt
-            current_question = qnum
 
+            # Read next table
             while table_index < len(tables):
                 tb = tables[table_index]
                 table_index += 1
@@ -189,10 +197,9 @@ def process_docx(path):
                     break
 
     # ---------------------------------------------------
-    # OUTPUT DOCX BUILD
+    # BUILD OUTPUT DOCX
     # ---------------------------------------------------
     out = Document()
-
     campuses = sorted(found_campuses)
 
     for teacher, questions in data.items():
@@ -201,25 +208,30 @@ def process_docx(path):
 
         out.add_heading(f"Teacher: {teacher}", level=2)
 
-        valid_camps = [
+        # Filter campuses with data
+        active_camps = [
             c for c in campuses if any(questions[q].get(c, "") for q in questions)
         ]
 
-        table = out.add_table(rows=1, cols=len(valid_camps) + 1)
+        table = out.add_table(rows=1, cols=len(active_camps) + 1)
         hdr = table.rows[0].cells
         hdr[0].text = "Question"
         hdr[0].paragraphs[0].runs[0].bold = True
 
-        for i, c in enumerate(valid_camps):
+        for i, c in enumerate(active_camps):
             hdr[i + 1].text = c
             hdr[i + 1].paragraphs[0].runs[0].bold = True
 
-        qs_sorted = sorted(questions.keys(), key=lambda x: int(re.findall(r"\d+", x)[0]))
+        # Question order
+        sorted_q = sorted(
+            questions.keys(),
+            key=lambda x: int(re.findall(r"\d+", x)[0])
+        )
 
-        for q in qs_sorted:
+        for q in sorted_q:
             row = table.add_row().cells
             row[0].text = question_text.get(q, q)
-            for i, c in enumerate(valid_camps):
+            for i, c in enumerate(active_camps):
                 row[i + 1].text = questions[q].get(c, "")
 
         set_borders(table)
@@ -242,7 +254,6 @@ def upload():
     file = request.files["file"]
     file_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(file_path)
-
     output = process_docx(file_path)
     return send_file(output, as_attachment=True)
 
