@@ -110,33 +110,33 @@ def extract_table(tb, qnum, campus, data_dict):
 # Detect Campus Name
 # -------------------------------------------------------
 def detect_campus(text):
+    clean = " ".join(text.split())  # normalize spaces
 
-    # Normalize spaces
-    clean = " ".join(text.split())
-
-    # Supports:
-    #   IG-I   Mars - Boys
-    #   IG-III Earth Computer Science - Girls
-    #   IG-II  Jupiter - Campus
-    #   IG-I   Venus
-    #   IG-II  Mars - Boys Campus
-    #
     patterns = [
-        r"(IG-[I1]+\s+[A-Za-z ]+?)\s*-\s*(Boys|Girls|Boys Campus|Girls Campus)",
-        r"(IG-[I1]+\s+[A-Za-z ]+?)\s*-\s*(Campus)",
-        r"(IG-[I1]+\s+[A-Za-z ]+?)\s*$"  # no Boys/Girls present
+        # IG level:
+        r"(IG-[I1]+\s+[A-Za-z ]+?)\s*-\s*(Boys|Girls|Campus|Boys Campus|Girls Campus)",
+        r"(IG-[I1]+\s+[A-Za-z ]+?)\s*$",
+
+        # Grade level:
+        r"(Grade\s*\d+\s+[A-Za-z ]+?)\s*-\s*(Boys|Girls|Campus|Boys Campus|Girls Campus)",
+        r"(Grade\s*\d+\s+[A-Za-z ]+?)\s*$"
     ]
 
     for pat in patterns:
         m = re.search(pat, clean, re.IGNORECASE)
         if m:
-            # Extract only the campus name part
             campus = m.group(1)
-            # Remove "IG-I", "IG-II", "IG-III"
+
+            # Remove IG level prefix
             campus = re.sub(r"IG-[I1]+\s*", "", campus, flags=re.IGNORECASE)
+
+            # Remove Grade prefix
+            campus = re.sub(r"Grade\s*\d+\s*", "", campus, flags=re.IGNORECASE)
+
             return campus.strip()
 
     return None
+
 
 
 # -------------------------------------------------------
