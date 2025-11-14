@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Upload Survey DOCX</title>
+    <title>Survey Processing Portal</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #2b5876, #4e4376);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,15 +21,22 @@
             backdrop-filter: blur(8px);
             padding: 40px;
             border-radius: 15px;
-            width: 350px;
+            width: 380px;
             text-align: center;
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
 
         h2 {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-size: 22px;
             font-weight: 600;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
         }
 
         input[type="file"] {
@@ -39,13 +46,13 @@
             border: none;
             background: #fff;
             color: #333;
+            margin-top: 8px;
         }
 
         button {
-            margin-top: 20px;
+            margin-top: 15px;
             width: 100%;
             padding: 12px;
-            background: #00c6ff;
             background: linear-gradient(90deg, #00c6ff, #0072ff);
             color: white;
             border: none;
@@ -57,12 +64,19 @@
         }
 
         button:hover {
-            opacity: 0.8;
+            opacity: 0.9;
             transform: scale(1.03);
         }
 
+        hr {
+            margin: 30px 0;
+            border: 0;
+            height: 1px;
+            background: rgba(255,255,255,0.4);
+        }
+
         .footer {
-            margin-top: 15px;
+            margin-top: 20px;
             font-size: 12px;
             opacity: 0.8;
         }
@@ -71,14 +85,29 @@
 <body>
 
 <div class="container">
-    <h2>Upload Survey Word File</h2>
+
+    <h2>Survey Processing Portal</h2>
+
+    <!-- DOCX Upload -->
+    <div class="section-title">Process Survey DOCX</div>
 
     <form action="/upload" method="POST" enctype="multipart/form-data">
-        <input type="file" name="file" required>
-        <button type="submit">Process File</button>
+        <input type="file" name="file" accept=".docx" required>
+        <button type="submit">Process DOCX</button>
+    </form>
+
+    <hr>
+
+    <!-- PDF Upload -->
+    <div class="section-title">Convert PDF → DOCX</div>
+
+    <form action="/convert_pdf" method="POST" enctype="multipart/form-data">
+        <input type="file" name="pdf_file" accept=".pdf" required>
+        <button type="submit">Convert PDF</button>
     </form>
 
     <div class="footer">SuperNova School © 2025</div>
+
 </div>
 
 </body>
