@@ -7,7 +7,6 @@ from docx.shared import Inches
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
-
 app = Flask(__name__)
 
 UPLOAD_FOLDER = "uploads"
@@ -18,13 +17,32 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 
 # -------------------------------------------------------
-# Add table borders
+# Normalize Teacher Name (case-insensitive + clean)
+# -------------------------------------------------------
+def normalize_teacher_name(name):
+    # Remove long dashes
+    name = name.replace("–", "-")
+
+    # Remove repeated spaces
+    name = re.sub(r"\s+", " ", name)
+
+    # Strip
+    name = name.strip()
+
+    # Key for grouping (lowercase)
+    key = name.lower()
+
+    return key, name
+
+
+# -------------------------------------------------------
+# Add borders to table
 # -------------------------------------------------------
 def set_borders(table):
     tbl = table._element
     borders = OxmlElement("w:tblBorders")
     for edge in ("top", "left", "bottom", "right", "insideH", "insideV"):
-        elem = OxmlElement(f"w:%s" % edge)
+        elem = OxmlElement(f"w:{edge}")
         elem.set(qn("w:val"), "single")
         elem.set(qn("w:sz"), "10")
         elem.set(qn("w:color"), "000000")
@@ -33,31 +51,28 @@ def set_borders(table):
 
 
 # -------------------------------------------------------
-# Header with logo + blue box
+# Add Header: Logo + Blue Box (ONLY 4 LINES)
 # -------------------------------------------------------
 def add_survey_header(doc, header_text):
-
-    # Add logo
+    # Logo
     try:
-        p_logo = doc.add_paragraph()
-        p_logo.alignment = 1
-        run = p_logo.add_run()
-        run.add_picture("static/logo.jpg", width=Inches(3))
+        p = doc.add_paragraph()
+        p.alignment = 1
+        run = p.add_run()
+        run.add_picture("static/logo.jpg", width=Inches(2.8))
     except:
-        print("Logo missing (static/logo.jpg).")
+        print("Logo missing: static/logo.jpg")
 
-    # Blue header table
+    # Blue Box Header
     table = doc.add_table(rows=1, cols=1)
+    cell = table.rows[0].cells[0]
 
     shade = OxmlElement("w:shd")
     shade.set(qn("w:fill"), "B7D3F2")
-
-    tcPr = table.rows[0].cells[0]._tc.get_or_add_tcPr()
-    tcPr.append(shade)
+    cell._tc.get_or_add_tcPr().append(shade)
 
     set_borders(table)
 
-    cell = table.rows[0].cells[0]
     p = cell.paragraphs[0]
     p.alignment = 1
 
@@ -70,171 +85,208 @@ def add_survey_header(doc, header_text):
 
 
 # -------------------------------------------------------
-# Extract teacher rows — IGNORE "Responses" column
+# UNIVERSAL TABLE HANDLER
+# Handles: Name/Percentage, Name/Responses/Percentage,
+# merged columns, ranking tables.
 # -------------------------------------------------------
-def extract_teacher_data(tb, question, campus, data):
+def extract_table(tb, qnum, campus, teacher_dict):
 
-    col_count = len(tb.rows[0].cells)
-
-    # Skip feedback tables
     header = [c.text.strip().lower() for c in tb.rows[0].cells]
-    if header == ["id", "responses"]:
-        return False
 
-    # ---------------------- Q1–Q7 (3-column tables) ----------------------
-    if col_count == 3:
-        name_col = 0
-        percentage_col = 2  # responses column ignored
-        is_ranking = False
+    name_col = None
+    percent_col = None
+    ranking_col = None
 
-    # ---------------------- Q8 (Ranking) ----------------------
-    elif col_count == 2:
-        name_col = 0
-        percentage_col = 1
-        is_ranking = True
+    for idx, h in enumerate(header):
+        if "name" in h:
+            name_col = idx
+        if "percentage" in h:
+            percent_col = idx
+        if "ranking" in h:
+            ranking_col = idx
 
-    else:
-        return False
+    # Determine mode
+    is_ranking = ranking_col is not None
+    value_col = ranking_col if is_ranking else percent_col
+
+    if name_col is None or value_col is None:
+        return False  # skip table
 
     # Extract rows
     for row in tb.rows[1:]:
-        name = row.cells[name_col].text.strip()
-        if not name or "none" in name.lower():
+        raw_name = row.cells[name_col].text.strip()
+        if not raw_name:
             continue
 
-        raw = row.cells[percentage_col].text.strip().replace("%", "")
+        if "none of the above" in raw_name.lower():
+            continue
 
-        # Ranking (no %)
-        if question == "Q#8" or is_ranking:
-            value = raw
-        else:
-            value = raw + "%" if raw else ""
+        # Normalize name
+        name_key, clean_name = normalize_teacher_name(raw_name)
+
+        raw_val = row.cells[value_col].text.strip().replace("%", "")
+
+        value = raw_val if is_ranking else (raw_val + "%" if raw_val else "")
 
         if value:
-            data[name][question][campus] = value
+            teacher_dict[name_key][qnum][campus] = value
+            # Also store pretty name
+            teacher_dict[name_key]["_pretty_name"] = clean_name
 
     return True
 
 
 # -------------------------------------------------------
-# Detect campus
+# Detect Campus (IG-I / II / III)
 # -------------------------------------------------------
 def detect_campus(text):
-    m = re.search(r"IG-III\s+([A-Za-z]+)\s*-\s*Boys", text, re.IGNORECASE)
-    if m:
-        return m.group(1).strip()
+    """
+    Detects campus name from headings like:
+        IG-I Mars - Boys
+        IG-II Earth Computer Science - Girls
+        IG-III Jupiter Science Wing
+        IG-I South Block
+        IG-III Mars Campus - Co-ed
+        IG-II Venus
+    
+    Returns cleaned campus string or None.
+    """
 
-    m = re.search(r"IG-II\s+([A-Za-z]+)\s*-\s*Boys", text, re.IGNORECASE)
-    return m.group(1).strip() if m else None
+    # Pattern for:
+    #   IG-I / IG-II / IG-III
+    #   followed by multi-word campus
+    #   optional hyphen
+    #   optional gender (Boys/Girls/Co-ed)
+    patterns = [
+        r"(IG-I+)\s+([A-Za-z ]+?)(?:\s*-\s*(Boys|Girls|Co[- ]?ed))?$",
+        r"(IG-II+)\s+([A-Za-z ]+?)(?:\s*-\s*(Boys|Girls|Co[- ]?ed))?$",
+        r"(IG-III+)\s+([A-Za-z ]+?)(?:\s*-\s*(Boys|Girls|Co[- ]?ed))?$",
+    ]
+
+    t = text.strip()
+
+    for pat in patterns:
+        m = re.search(pat, t, re.IGNORECASE)
+        if m:
+            raw = m.group(2)
+            if raw:
+                # Remove trailing common words if present
+                raw = raw.replace("Campus", "").strip()
+                raw = re.sub(r"\s+", " ", raw)
+
+                # Ensure capitalization consistency
+                raw = " ".join(w.capitalize() for w in raw.split(" "))
+
+                return raw
+
+    return None
+
+
 
 
 # -------------------------------------------------------
-# MAIN PROCESSOR
+# PROCESS DOCX
 # -------------------------------------------------------
 def process_docx(path):
 
     doc = Document(path)
-
-    data = defaultdict(lambda: defaultdict(dict))
-    question_text = {}
-    found_campuses = set()
-    tables = doc.tables
     paragraphs = doc.paragraphs
+    tables = doc.tables
+
+    teacher_data = defaultdict(lambda: defaultdict(dict))
+    question_text = {}
+
     table_index = 0
     current_campus = None
+    found_campuses = set()
 
-    # ---------------------------------------------------
-    # Extract clean survey header
-    # ---------------------------------------------------
-    valid_header_keywords = [
+    # ---------- Extract ONLY 4-Line Header ----------
+    header_lines = []
+    valid_keywords = [
         "learners",
         "academic year",
         "igcse boys",
         "college campus",
-        "igcse-ii",
+        "igcse-i",
+        "igcse ii",
         "igcse iii",
-        "igcse-iii"
     ]
 
-    survey_header_lines = []
-
     for p in paragraphs:
-        txt = p.text.strip()
-        low = txt.lower()
+        text = p.text.strip()
+        low = text.lower()
 
-        if any(k in low for k in valid_header_keywords):
-            survey_header_lines.append(txt)
-            continue
+        if any(k in low for k in valid_keywords):
+            header_lines.append(text)
 
         if low.startswith("q#1"):
             break
 
-    survey_header = "\n".join(survey_header_lines)
+    survey_header = "\n".join(header_lines)
 
-    # ---------------------------------------------------
-    # Extract all questions + tables
-    # ---------------------------------------------------
+    # ---------- Extract Q# + Tables ----------
     for p in paragraphs:
-        txt = p.text.strip()
+        t = p.text.strip()
 
-        # Detect campus
-        campus = detect_campus(txt)
-        if campus:
-            current_campus = campus
-            found_campuses.add(campus)
+        # Campus
+        camp = detect_campus(t)
+        if camp:
+            current_campus = camp
+            found_campuses.add(camp)
 
-        # Detect Q#
-        m = re.match(r"(Q#\d+)\s*[:\-\.]?\s*(.*)", txt)
+        # Question
+        m = re.match(r"(Q#\d+)", t)
         if m:
             qnum = m.group(1)
-            question_text[qnum] = txt
+            question_text[qnum] = t
 
-            # Read next table
+            # Next table belongs to this Q
             while table_index < len(tables):
                 tb = tables[table_index]
                 table_index += 1
-                if extract_teacher_data(tb, qnum, current_campus, data):
+                if extract_table(tb, qnum, current_campus, teacher_data):
                     break
 
-    # ---------------------------------------------------
-    # BUILD OUTPUT DOCX
-    # ---------------------------------------------------
+    # ---------- Build output ----------
     out = Document()
-    campuses = sorted(found_campuses)
+    sorted_campuses = sorted(found_campuses)
 
-    for teacher, questions in data.items():
+    for teacher_key, qs in teacher_data.items():
+
+        teacher_pretty = qs.get("_pretty_name", teacher_key.title())
 
         add_survey_header(out, survey_header)
+        out.add_heading(f"Teacher: {teacher_pretty}", level=2)
 
-        out.add_heading(f"Teacher: {teacher}", level=2)
-
-        # Filter campuses with data
-        active_camps = [
-            c for c in campuses if any(questions[q].get(c, "") for q in questions)
+        # Which campuses have data?
+        active_campuses = [
+            c for c in sorted_campuses if any(qs[q].get(c) for q in qs if not q.startswith("_"))
         ]
 
-        table = out.add_table(rows=1, cols=len(active_camps) + 1)
+        # Create table
+        table = out.add_table(rows=1, cols=1 + len(active_campuses))
+        set_borders(table)
+
         hdr = table.rows[0].cells
         hdr[0].text = "Question"
         hdr[0].paragraphs[0].runs[0].bold = True
 
-        for i, c in enumerate(active_camps):
+        for i, c in enumerate(active_campuses):
             hdr[i + 1].text = c
             hdr[i + 1].paragraphs[0].runs[0].bold = True
 
-        # Question order
-        sorted_q = sorted(
-            questions.keys(),
+        # Sort Q1–Q8
+        sorted_qs = sorted(
+            [q for q in qs.keys() if not q.startswith("_")],
             key=lambda x: int(re.findall(r"\d+", x)[0])
         )
 
-        for q in sorted_q:
+        for q in sorted_qs:
             row = table.add_row().cells
-            row[0].text = question_text.get(q, q)
-            for i, c in enumerate(active_camps):
-                row[i + 1].text = questions[q].get(c, "")
+            row[0].text = question_text[q]
+            for i, c in enumerate(active_campuses):
+                row[i + 1].text = qs[q].get(c, "")
 
-        set_borders(table)
         out.add_page_break()
 
     out.save(OUTPUT_FILE)
@@ -251,15 +303,15 @@ def index():
 
 @app.route("/upload", methods=["POST"])
 def upload():
-    file = request.files["file"]
-    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(file_path)
-    output = process_docx(file_path)
+    f = request.files["file"]
+    path = os.path.join(UPLOAD_FOLDER, f.filename)
+    f.save(path)
+    output = process_docx(path)
     return send_file(output, as_attachment=True)
 
 
 # -------------------------------------------------------
-# RUN APP
+# RUN
 # -------------------------------------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
