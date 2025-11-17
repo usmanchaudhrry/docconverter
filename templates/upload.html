@@ -967,27 +967,33 @@
                 </div>
             </div>
 
-           <form id="pdf-form" onsubmit="processFile('pdf-form', '/convert_pdf', 'pdf-loader', 'pdf-btn', 'PDF_CONVERTED.docx')">
+         <form id="pdf-form" onsubmit="processFile('pdf-form', '/convert_pdf', 'pdf-loader', 'pdf-btn', 'PDF_CONVERTED.docx')">
 
-    <!-- ⭐ Campus Name Input Field -->
-    <label style="font-weight: 600; margin-bottom: 8px; display:block;">
-        Campus Name (optional):
-    </label>
-    <input 
-        type="text" 
-        name="campus_name" 
-        placeholder="Enter campus name"
-        style="
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            background: var(--bg-dark);
+    <!-- Campus Name Input (styled like built-in UI elements) -->
+    <div style="margin-bottom: 1.8rem;">
+        <label style="
+            font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 1.2rem;
-        "
-    >
+            margin-bottom: 0.5rem;
+            display: block;
+        ">
+            Campus Name (optional):
+        </label>
 
+        <input type="text" name="campus_name" placeholder="Enter campus name"
+            style="
+                width: 100%;
+                padding: 14px 16px;
+                border-radius: 12px;
+                border: 1px solid var(--border);
+                background: var(--bg-card);
+                color: var(--text-primary);
+                font-size: 0.95rem;
+                outline: none;
+            ">
+    </div>
+
+    <!-- Upload area -->
     <div class="upload-area" id="pdf-upload-area">
         <div class="upload-icon">📑</div>
         <div class="upload-text">
@@ -1007,8 +1013,8 @@
         <div class="loader"></div>
         <p class="loader-text">Converting your PDF...</p>
     </div>
-
 </form>
+</div> 
 
 
     <!-- Stats -->
