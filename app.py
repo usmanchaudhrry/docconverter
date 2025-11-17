@@ -111,33 +111,36 @@ def extract_table(tb, qnum, campus, data_dict):
 # Detect Campus Name
 # -------------------------------------------------------
 def detect_campus(text):
-    clean = " ".join(text.split())  # normalize spaces
+    clean = " ".join(text.split())
+    dash = r"[-–—]"
 
     patterns = [
-        # IG level:
-        r"(IG-[I1]+\s+[A-Za-z ]+?)\s*-\s*(Boys|Girls|Campus|Boys Campus|Girls Campus)",
-        r"(IG-[I1]+\s+[A-Za-z ]+?)\s*$",
-
-        # Grade level:
-        r"(Grade\s*\d+\s+[A-Za-z ]+?)\s*-\s*(Boys|Girls|Campus|Boys Campus|Girls Campus)",
-        r"(Grade\s*\d+\s+[A-Za-z ]+?)\s*$"
+        # IG with dash separator
+        rf"(IG-[I1]+)\s*{dash}\s*(.+)$",
+        rf"(IG-[I1]+)\s+(.+)$",
+        
+        # Grade with dash separator (FIXED)
+        rf"Grade(?:\s*\d+)?\s*{dash}\s*(.+)$",
+        
+        # Grade with space separator
+        rf"Grade(?:\s*\d+)?\s+(.+)$",
     ]
 
     for pat in patterns:
         m = re.search(pat, clean, re.IGNORECASE)
         if m:
-            campus = m.group(1)
-
-            # Remove IG level prefix
-            campus = re.sub(r"IG-[I1]+\s*", "", campus, flags=re.IGNORECASE)
-
-            # Remove Grade prefix
-            campus = re.sub(r"Grade\s*\d+\s*", "", campus, flags=re.IGNORECASE)
-
-            return campus.strip()
+            # For patterns with 2 groups, take the last group (campus name)
+            # For patterns with 1 group, take that group
+            if m.lastindex == 2:
+                campus = m.group(2).strip()
+            else:
+                campus = m.group(1).strip()
+                # Remove IG prefix if present
+                campus = re.sub(r"IG-[I1]+\s*", "", campus, flags=re.IGNORECASE).strip()
+            
+            return campus
 
     return None
-
 
 
 # -------------------------------------------------------
@@ -166,6 +169,7 @@ def process_docx(path):
         "igcse-i",
         "igcse ii",
         "igcse iii"
+        
     ]
 
     for p in paragraphs:

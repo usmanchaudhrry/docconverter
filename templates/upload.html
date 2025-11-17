@@ -1,114 +1,1022 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Survey Processing Portal</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #2b5876, #4e4376);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #fff;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Survey Processing Portal - SuperNova School</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --primary: #2563eb;
+        --primary-dark: #1e40af;
+        --secondary: #8b5cf6;
+        --accent: #06b6d4;
+        --bg-dark: #0f172a;
+        --bg-card: #1e293b;
+        --text-primary: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --success: #10b981;
+        --error: #ef4444;
+        --border: #334155;
+        --shadow: rgba(0, 0, 0, 0.5);
+    }
+
+    body.light-mode {
+        --primary: #2563eb;
+        --primary-dark: #1d4ed8;
+        --secondary: #7c3aed;
+        --accent: #0891b2;
+        --bg-dark: #f8fafc;
+        --bg-card: #ffffff;
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --border: #e2e8f0;
+        --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--bg-dark);
+        color: var(--text-primary);
+        min-height: 100vh;
+        transition: all 0.3s ease;
+        overflow-x: hidden;
+    }
+
+    /* Animated Background */
+    .bg-animated {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        opacity: 0.05;
+    }
+
+    .bg-animated::before {
+        content: '';
+        position: absolute;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, var(--accent) 1px, transparent 1px);
+        background-size: 50px 50px;
+        animation: moveGrid 20s linear infinite;
+    }
+
+    @keyframes moveGrid {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(50px, 50px); }
+    }
+
+    /* Header */
+    header {
+        background: var(--bg-card);
+        border-bottom: 1px solid var(--border);
+        padding: 1rem 2rem;
+        box-shadow: 0 4px 6px var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(10px);
+    }
+
+    .header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .logo-text h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .logo-text p {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+        position: fixed;
+        top: 1.5rem;
+        right: 2rem;
+        background: var(--bg-card);
+        border: 2px solid var(--border);
+        width: 60px;
+        height: 32px;
+        border-radius: 50px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        padding: 3px;
+        transition: all 0.3s ease;
+        z-index: 1001;
+        box-shadow: 0 2px 10px var(--shadow);
+    }
+
+    .theme-toggle:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px var(--shadow);
+    }
+
+    .toggle-slider {
+        width: 24px;
+        height: 24px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        transition: transform 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+    }
+
+    body.light-mode .toggle-slider {
+        transform: translateX(28px);
+    }
+
+    /* Main Container */
+    .main-container {
+        max-width: 1400px;
+        margin: 3rem auto;
+        padding: 0 2rem;
+    }
+
+    /* Hero Section */
+    .hero {
+        text-align: center;
+        margin-bottom: 4rem;
+        animation: fadeInUp 0.8s ease;
+    }
+
+    .hero h2 {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero p {
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .process-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px var(--shadow);
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.8s ease;
+    }
+
+    .process-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px var(--shadow);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    }
+
+    .card-title h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+    }
+
+    .card-title p {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    /* File Upload Area */
+    .upload-area {
+        border: 2px dashed var(--border);
+        border-radius: 15px;
+        padding: 3rem 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: var(--bg-dark);
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .upload-area:hover {
+        border-color: var(--primary);
+        background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(139, 92, 246, 0.05));
+    }
+
+    .upload-area.dragover {
+        border-color: var(--accent);
+        background: rgba(6, 182, 212, 0.1);
+        transform: scale(1.02);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.6;
+    }
+
+    .upload-text h4 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .upload-text p {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .file-name {
+        margin-top: 1rem;
+        padding: 0.8rem;
+        background: var(--primary);
+        color: white;
+        border-radius: 10px;
+        font-weight: 600;
+        display: none;
+        animation: slideIn 0.3s ease;
+    }
+
+    input[type="file"] {
+        display: none;
+    }
+
+    /* Button */
+    .process-btn {
+        width: 100%;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: white;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .process-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .process-btn:hover::before {
+        left: 100%;
+    }
+
+    .process-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+    }
+
+    .process-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Loader */
+    .loader-container {
+        display: none;
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+
+    .loader {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        border: 4px solid var(--border);
+        border-top-color: var(--primary);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .loader-text {
+        margin-top: 1rem;
+        color: var(--text-secondary);
+        font-weight: 600;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Success Notification */
+    .notification {
+        position: fixed;
+        top: 100px;
+        right: -400px;
+        background: var(--success);
+        color: white;
+        padding: 1.2rem 2rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-weight: 600;
+        z-index: 1000;
+        transition: right 0.5s ease;
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    .notification.show {
+        right: 2rem;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .notification.error {
+        background: var(--error);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+    }
+    
+
+    /* Stats Section */
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 3rem;
+        animation: fadeInUp 1s ease;
+    }
+
+    .stat-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px var(--shadow);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary), var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .cards-grid {
+            grid-template-columns: 1fr;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+    }
+
+    @media (max-width: 768px) {
+        header {
+            padding: 1rem;
         }
 
-        .container {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(8px);
-            padding: 40px;
-            border-radius: 15px;
-            width: 380px;
+        .header-content {
+            flex-direction: column;
+            gap: 1rem;
             text-align: center;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
 
-        h2 {
-            margin-bottom: 15px;
-            font-size: 22px;
-            font-weight: 600;
+        .logo-section {
+            flex-direction: column;
         }
 
-        .section-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 20px;
-            margin-bottom: 10px;
+        .main-container {
+            padding: 0 1rem;
+            margin: 2rem auto 1rem;
         }
 
-        input[type="file"] {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            background: #fff;
-            color: #333;
-            margin-top: 8px;
+        .hero h2 {
+            font-size: 2rem;
+            line-height: 1.2;
         }
 
-        button {
-            margin-top: 15px;
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(90deg, #00c6ff, #0072ff);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
+        .hero p {
+            font-size: 1rem;
+            padding: 0 1rem;
         }
 
-        button:hover {
-            opacity: 0.9;
-            transform: scale(1.03);
+        .process-card {
+            padding: 1.5rem;
         }
 
-        hr {
-            margin: 30px 0;
-            border: 0;
-            height: 1px;
-            background: rgba(255,255,255,0.4);
+        .card-header {
+            flex-direction: column;
+            text-align: center;
         }
 
-        .footer {
-            margin-top: 20px;
-            font-size: 12px;
-            opacity: 0.8;
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
         }
-    </style>
+
+        .card-title h3 {
+            font-size: 1.3rem;
+        }
+
+        .upload-area {
+            padding: 2rem 1rem;
+        }
+
+        .upload-icon {
+            font-size: 2.5rem;
+        }
+
+        .upload-text h4 {
+            font-size: 1rem;
+        }
+
+        .upload-text p {
+            font-size: 0.85rem;
+        }
+
+        .process-btn {
+            padding: 0.9rem 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .stats {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-card {
+            padding: 1.2rem;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+        }
+
+        .notification {
+            right: 1rem;
+            left: 1rem;
+            width: auto;
+        }
+
+        .notification.show {
+            right: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero h2 {
+            font-size: 1.6rem;
+        }
+
+        .hero p {
+            font-size: 0.9rem;
+        }
+
+        .logo-text h1 {
+            font-size: 1.1rem;
+        }
+
+        .logo-text p {
+            font-size: 0.7rem;
+        }
+
+        .process-card {
+            padding: 1.2rem;
+            border-radius: 15px;
+        }
+
+        .card-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 1.3rem;
+        }
+
+        .card-title h3 {
+            font-size: 1.1rem;
+        }
+
+        .card-title p {
+            font-size: 0.8rem;
+        }
+
+        .upload-area {
+            padding: 1.5rem 1rem;
+        }
+
+        .upload-icon {
+            font-size: 2rem;
+        }
+
+        .upload-text h4 {
+            font-size: 0.95rem;
+        }
+
+        .upload-text p {
+            font-size: 0.8rem;
+        }
+
+        .file-name {
+            font-size: 0.85rem;
+            padding: 0.6rem;
+        }
+
+        .process-btn {
+            padding: 0.85rem 1.2rem;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card {
+            padding: 1rem;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+        }
+
+        .loader {
+            width: 40px;
+            height: 40px;
+        }
+
+        .loader-text {
+            font-size: 0.9rem;
+        }
+
+        .notification {
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+            top: 80px;
+            right: 1rem;
+        }
+
+        .notification.show {
+            right: 1rem;
+        }
+
+        .theme-toggle {
+            top: 1rem;
+            right: 1rem;
+            width: 55px;
+            height: 28px;
+        }
+
+        .toggle-slider {
+            width: 22px;
+            height: 22px;
+            font-size: 0.65rem;
+        }
+
+        body.light-mode .toggle-slider {
+            transform: translateX(25px);
+        }
+    }
+
+    @media (max-width: 360px) {
+        .main-container {
+            margin: 1rem auto;
+        }
+
+        .hero {
+            margin-bottom: 2rem;
+        }
+
+        .hero h2 {
+            font-size: 1.4rem;
+        }
+
+        .cards-grid {
+            gap: 1.5rem;
+        }
+
+        .process-card {
+            padding: 1rem;
+        }
+
+        .upload-area {
+            padding: 1.2rem 0.8rem;
+        }
+    }
+
+    /* Landscape Mobile */
+    @media (max-height: 600px) and (orientation: landscape) {
+        .hero {
+            margin-bottom: 2rem;
+        }
+
+        .hero h2 {
+            font-size: 1.5rem;
+        }
+
+        .hero p {
+            font-size: 0.9rem;
+        }
+
+        .main-container {
+            margin: 1.5rem auto;
+        }
+
+        .stats {
+            margin-top: 2rem;
+        }
+    }
+</style>
+
+<script>
+    let processedCount = 0;
+    let successCount = 0;
+
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        const slider = document.querySelector('.toggle-slider');
+        slider.textContent = isLight ? '☀️' : '🌙';
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    }
+
+    function showNotification(message, isError = false) {
+        const notification = document.getElementById('notification');
+
+        // Reset timeout if already active
+        if (notification.hideTimeout) clearTimeout(notification.hideTimeout);
+
+        notification.classList.remove('show', 'error');
+        notification.textContent = message;
+
+        if (isError) notification.classList.add('error');
+
+        setTimeout(() => notification.classList.add('show'), 10);
+
+        notification.hideTimeout = setTimeout(() => {
+            notification.classList.remove('show');
+        }, 3500);
+    }
+
+    /* ========================================================
+       FILE UPLOAD + BUTTON ENABLE/DISABLE LOGIC 
+       ======================================================== */
+    function setupFileUpload(uploadAreaId, inputId, fileNameId, buttonId) {
+        const uploadArea = document.getElementById(uploadAreaId);
+        const fileInput = document.getElementById(inputId);
+        const fileName = document.getElementById(fileNameId);
+        const submitBtn = document.getElementById(buttonId);
+
+        /* ⭐ Disable button by default */
+        submitBtn.disabled = true;
+
+        /* ⭐ Enable button ONLY when file selected */
+        function enableBtn() {
+            if (fileInput.files.length > 0) {
+                fileName.textContent = `📄 ${fileInput.files[0].name}`;
+                fileName.style.display = 'block';
+
+                submitBtn.disabled = false;   // ENABLE BUTTON
+            }
+        }
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Drag over
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        // Drag leave
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        // Drop file
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                enableBtn();  // enable after drop
+            }
+        });
+
+        // Normal file selection
+        fileInput.addEventListener('change', enableBtn);
+    }
+
+
+    /* ========================================================
+       PROCESS FILE
+       ======================================================== */
+    async function processFile(formId, route, loaderId, btnId, outputFilename) {
+        event.preventDefault();
+
+        const form = document.getElementById(formId);
+        const formData = new FormData(form);
+        const loader = document.getElementById(loaderId);
+        const submitBtn = document.getElementById(btnId);
+
+        loader.style.display = 'block';
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch(route, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok)
+                throw new Error('Server error: ' + response.statusText);
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = outputFilename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+
+            showNotification('✅ File processed successfully!');
+
+            processedCount++;
+            successCount++;
+            document.getElementById('processed-count').textContent = processedCount;
+            document.getElementById('success-count').textContent = successCount;
+
+            // reset everything
+            form.reset();
+            const fileNameDisplay = form.querySelector('.file-name');
+            if (fileNameDisplay) fileNameDisplay.style.display = 'none';
+
+            submitBtn.disabled = true; // Disable again after reset
+
+        } catch (err) {
+            showNotification('❌ Error: ' + err.message, true);
+            console.error(err);
+
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
+
+    /* ========================================================
+       ON PAGE LOAD
+       ======================================================== */
+    window.onload = () => {
+        // theme
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-mode');
+            document.querySelector('.toggle-slider').textContent = '☀️';
+        }
+
+        /* ⭐ Hook upload + button logic */
+        setupFileUpload('docx-upload-area', 'docx-input', 'docx-file-name', 'docx-btn');
+        setupFileUpload('pdf-upload-area', 'pdf-input', 'pdf-file-name', 'pdf-btn');
+    };
+</script>
+
+
 </head>
 <body>
 
-<div class="container">
+<div class="bg-animated"></div>
 
-    <h2>Survey Processing Portal</h2>
+<!-- Header -->
+<header>
+    <div class="header-content">
+        <div class="logo-section">
+            <div class="logo-text">
+                <h1>Survey Processing Portal</h1>
+                <p>Advanced Document Processing System</p>
+            </div>
+        </div>
+    </div>
+</header>
 
-    <!-- DOCX Upload -->
-    <div class="section-title">Process Survey DOCX</div>
+<!-- Theme Toggle (Fixed Position) -->
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+    <div class="toggle-slider">🌙</div>
+</button>
 
-    <form action="/upload" method="POST" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".docx" required>
-        <button type="submit">Process DOCX</button>
-    </form>
+<!-- Main Content -->
+<div class="main-container">
+    
+    <!-- Hero -->
+    <div class="hero">
+        <h2>Survey Processing Portal</h2>
+        <p>Advanced document processing system for educational surveys. Upload your files and get professionally formatted results instantly.</p>
+    </div>
 
-    <hr>
+    <!-- Processing Cards -->
+    <div class="cards-grid">
+        
+        <!-- DOCX Processing -->
+        <div class="process-card">
+            <div class="card-header">
+                <div class="card-icon">📊</div>
+                <div class="card-title">
+                    <h3>Process Survey DOCX</h3>
+                    <p>Convert survey documents to formatted reports</p>
+                </div>
+            </div>
 
-    <!-- PDF Upload -->
-    <div class="section-title">Convert PDF → DOCX</div>
+            <form id="docx-form" onsubmit="processFile('docx-form', '/upload', 'docx-loader', 'docx-btn', 'FINAL_DYNAMIC_TABLES.docx')">
+                <div class="upload-area" id="docx-upload-area">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">
+                        <h4>Click to upload or drag & drop</h4>
+                        <p>Supports .docx files only</p>
+                    </div>
+                    <div class="file-name" id="docx-file-name"></div>
+                </div>
+                <input type="file" id="docx-input" name="file" accept=".docx" required>
+                
+                <button type="submit" class="process-btn" id="docx-btn">
+                    Process Document
+                </button>
 
-    <form action="/convert_pdf" method="POST" enctype="multipart/form-data">
-        <input type="file" name="pdf_file" accept=".pdf" required>
-        <button type="submit">Convert PDF</button>
-    </form>
+                <div class="loader-container" id="docx-loader">
+                    <div class="loader"></div>
+                    <p class="loader-text">Processing your document...</p>
+                </div>
+            </form>
+        </div>
 
-    <div class="footer">SuperNova School © 2025</div>
+        <!-- PDF Conversion -->
+        <div class="process-card">
+            <div class="card-header">
+                <div class="card-icon">📄</div>
+                <div class="card-title">
+                    <h3>Convert PDF to DOCX</h3>
+                    <p>Extract and convert PDF surveys to editable format</p>
+                </div>
+            </div>
+
+            <form id="pdf-form" onsubmit="processFile('pdf-form', '/convert_pdf', 'pdf-loader', 'pdf-btn', 'PDF_CONVERTED.docx')">
+                <div class="upload-area" id="pdf-upload-area">
+                    <div class="upload-icon">📑</div>
+                    <div class="upload-text">
+                        <h4>Click to upload or drag & drop</h4>
+                        <p>Supports .pdf files only</p>
+                    </div>
+                    <div class="file-name" id="pdf-file-name"></div>
+                </div>
+                <input type="file" id="pdf-input" name="pdf_file" accept=".pdf" required>
+                
+                <button type="submit" class="process-btn" id="pdf-btn">
+                    Convert to DOCX
+                </button>
+
+                <div class="loader-container" id="pdf-loader">
+                    <div class="loader"></div>
+                    <p class="loader-text">Converting your PDF...</p>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-number" id="processed-count">0</div>
+            <div class="stat-label">Files Processed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" id="success-count">0</div>
+            <div class="stat-label">Successful Conversions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">⚡</div>
+            <div class="stat-label">Lightning Fast</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">🔒</div>
+            <div class="stat-label">Secure Processing</div>
+        </div>
+    </div>
 
 </div>
+
+<!-- Notification -->
+<div id="notification" class="notification">Success!</div>
+
+
 
 </body>
 </html>
