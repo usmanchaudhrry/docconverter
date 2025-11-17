@@ -241,7 +241,7 @@ def process_docx(path):
 # -------------------------------------------------------
 # PDF → DOCX USING CAMEL0T
 # -------------------------------------------------------
-def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx"):
+def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=""):
     import pdfplumber
     import re
     from collections import defaultdict
@@ -263,6 +263,26 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx"):
 
     doc = Document()
 
+    # ---------------------------
+    # INSERT HEADER ON TOP
+    # ---------------------------
+    header_para = doc.add_paragraph()
+    header_para.alignment = 1  # center
+
+    # Main text
+    run1 = header_para.add_run("Learner's Survey\nAcademic Year 2025-2026\n")
+    run1.bold = True
+
+    # Campus name from user OR fallback text
+    if campus_name.strip():
+        run2 = header_para.add_run(campus_name.strip())
+    else:
+        run2 = header_para.add_run("Campus name")
+
+    run2.bold = True
+
+    doc.add_paragraph()  # spacing after header
+
     # -------- UNIVERSAL QUESTION DETECTOR --------
     q_pattern = re.compile(
         r".*?(Q[#\s]*\d+)\s*[:\.\-]*\s*(.*)",
@@ -273,8 +293,7 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx"):
     teacher_pattern = re.compile(r"(.+?)\s*-\s*[A-Za-z ]+\s+(\d+)$")
 
     # SPECIAL FOR Q8 (ranking)
-    ranking_pattern = re.compile(r"^\s*(\d+)\s+(.*)$")  
-    # matches: "1 Ms. Amna", "2 Ms. Sidra", etc.
+    ranking_pattern = re.compile(r"^\s*(\d+)\s+(.*)$")
 
     questions = {}
     current_q = None
@@ -292,7 +311,7 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx"):
             # ---- Detect question (Q#1, Q#2, etc.) ----
             mq = q_pattern.match(clean)
             if mq:
-                q_id = mq.group(1).replace(" ", "").upper()   # Q#8
+                q_id = mq.group(1).replace(" ", "").upper()  # Q#8
                 q_text = mq.group(1) + " " + mq.group(2)
 
                 current_q = q_id
@@ -385,6 +404,7 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx"):
     return output_path
 
 
+
 # -------------------------------------------------------
 # ROUTES
 # -------------------------------------------------------
@@ -417,6 +437,7 @@ def debug_pdf(pdf_path):
 @app.route("/convert_pdf", methods=["POST"])
 def convert_pdf():
     f = request.files.get("pdf_file")
+    campus_name = request.form.get("campus_name", "").strip()
 
     if not f:
         return "No file selected", 400
@@ -425,10 +446,11 @@ def convert_pdf():
     f.save(pdf_path)
 
     try:
-        output = convert_pdf_to_docx(pdf_path)
+        output = convert_pdf_to_docx(pdf_path, campus_name=campus_name)
         return send_file(output, as_attachment=True)
     except Exception as e:
         return f"Error: {str(e)}", 500
+
 
 
 
