@@ -289,8 +289,8 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
         re.IGNORECASE
     )
 
-    # -------- TEACHER / RESPONSE DETECTOR --------
-    teacher_pattern = re.compile(r"(.+?)\s*-\s*[A-Za-z ]+\s+(\d+)$")
+    # -------- TEACHER / RESPONSE DETECTOR (Updated to include "None of the above") --------
+    teacher_pattern = re.compile(r"(.+?)\s+(\d+)$")
 
     # SPECIAL FOR Q8 (ranking)
     ranking_pattern = re.compile(r"^\s*(\d+)\s+(.*)$")
@@ -331,10 +331,12 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
                 continue
 
             # ---- Normal questions (teacher + responses) ----
+            # Updated pattern to capture "None of the above" as well
             mt = teacher_pattern.search(clean)
             if mt:
                 teacher = mt.group(1).strip()
                 count = int(mt.group(2))
+                # NO FILTER - Include all entries including "None of the above"
                 questions[current_q]["entries"].append((teacher, count))
 
     pdf.close()
@@ -387,7 +389,13 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
         hdr[1].text = "Responses"
         hdr[2].text = "Percentage"
 
-        for teacher, count in grouped.items():
+        # Sort entries: "None of the above" at the end
+        sorted_teachers = sorted(
+            grouped.items(),
+            key=lambda x: (x[0].lower() == "none of the above", x[0].lower())
+        )
+
+        for teacher, count in sorted_teachers:
             row = table.add_row().cells
             row[0].text = teacher
             row[1].text = str(count)
