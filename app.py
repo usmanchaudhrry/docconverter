@@ -269,11 +269,9 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
     header_para = doc.add_paragraph()
     header_para.alignment = 1  # center
 
-    # Main text
     run1 = header_para.add_run("Learner's Survey\nAcademic Year 2025-2026\n")
     run1.bold = True
 
-    # Campus name from user OR fallback text
     if campus_name.strip():
         run2 = header_para.add_run(campus_name.strip())
     else:
@@ -289,7 +287,7 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
         re.IGNORECASE
     )
 
-    # -------- TEACHER / RESPONSE DETECTOR (Updated to include "None of the above") --------
+    # -------- TEACHER / RESPONSE DETECTOR --------
     teacher_pattern = re.compile(r"(.+?)\s+(\d+)$")
 
     # SPECIAL FOR Q8 (ranking)
@@ -311,7 +309,7 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
             # ---- Detect question (Q#1, Q#2, etc.) ----
             mq = q_pattern.match(clean)
             if mq:
-                q_id = mq.group(1).replace(" ", "").upper()  # Q#8
+                q_id = mq.group(1).replace(" ", "").upper()
                 q_text = mq.group(1) + " " + mq.group(2)
 
                 current_q = q_id
@@ -331,12 +329,10 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
                 continue
 
             # ---- Normal questions (teacher + responses) ----
-            # Updated pattern to capture "None of the above" as well
             mt = teacher_pattern.search(clean)
             if mt:
                 teacher = mt.group(1).strip()
                 count = int(mt.group(2))
-                # NO FILTER - Include all entries including "None of the above"
                 questions[current_q]["entries"].append((teacher, count))
 
     pdf.close()
@@ -368,6 +364,11 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
                 row = table.add_row().cells
                 row[0].text = teacher
                 row[1].text = str(rank)
+
+            # ---- ADD MONTHLY GRADING ROW ----
+            row = table.add_row().cells
+            row[0].text = "Monthly Grading"
+            row[1].text = ""
 
             doc.add_page_break()
             continue
@@ -402,6 +403,12 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
 
             pct = round((count / total) * 100, 1) if total else 0
             row[2].text = f"{pct}%"
+
+        # ---- ADD MONTHLY GRADING ROW ----
+        row = table.add_row().cells
+        row[0].text = "Monthly Grading"
+        row[1].text = ""
+        row[2].text = ""
 
         doc.add_page_break()
 
