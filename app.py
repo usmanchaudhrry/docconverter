@@ -365,10 +365,7 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
                 row[0].text = teacher
                 row[1].text = str(rank)
 
-            # ---- ADD MONTHLY GRADING ROW ----
-            row = table.add_row().cells
-            row[0].text = "Monthly Grading"
-            row[1].text = ""
+     
 
             doc.add_page_break()
             continue
@@ -404,11 +401,7 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
             pct = round((count / total) * 100, 1) if total else 0
             row[2].text = f"{pct}%"
 
-        # ---- ADD MONTHLY GRADING ROW ----
-        row = table.add_row().cells
-        row[0].text = "Monthly Grading"
-        row[1].text = ""
-        row[2].text = ""
+      
 
         doc.add_page_break()
 
