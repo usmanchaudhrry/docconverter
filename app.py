@@ -240,13 +240,13 @@ def process_docx(path):
                 row[i + 1].text = qs[q].get(c, "")
 
         # Monthly grading row
-        monthly_row = table.add_row().cells
-        monthly_row[0].text = "Monthly Grading"
-        monthly_row[0].paragraphs[0].runs[0].bold = True
-        for i in range(len(active_camps)):
-            monthly_row[i + 1].text = ""
+        # monthly_row = table.add_row().cells
+        # monthly_row[0].text = "Monthly Grading"
+        # monthly_row[0].paragraphs[0].runs[0].bold = True
+        # for i in range(len(active_camps)):
+        #     monthly_row[i + 1].text = ""
 
-        out.add_page_break()
+        # out.add_page_break()
 
     out.save(OUTPUT_FILE)
     return OUTPUT_FILE
@@ -484,7 +484,7 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
             # monthly_row[0].paragraphs[0].runs[0].bold = True
             # monthly_row[1].text = ""
 
-            doc.add_page_break()
+            # doc.add_page_break()
             continue
 
         grouped = defaultdict(int)
