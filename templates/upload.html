@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Survey Processing Portal - SuperNova School</title>
+<title>Survey Processing Portal</title>
 
 <!-- Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -52,7 +52,6 @@
         overflow-x: hidden;
     }
 
-    /* Animated Background */
     .bg-animated {
         position: fixed;
         top: 0;
@@ -79,7 +78,6 @@
         100% { transform: translate(50px, 50px); }
     }
 
-    /* Header */
     header {
         background: var(--bg-card);
         border-bottom: 1px solid var(--border);
@@ -120,7 +118,6 @@
         font-weight: 500;
     }
 
-    /* Theme Toggle */
     .theme-toggle {
         position: fixed;
         top: 1.5rem;
@@ -160,14 +157,12 @@
         transform: translateX(28px);
     }
 
-    /* Main Container */
     .main-container {
         max-width: 1400px;
         margin: 3rem auto;
         padding: 0 2rem;
     }
 
-    /* Hero Section */
     .hero {
         text-align: center;
         margin-bottom: 4rem;
@@ -191,10 +186,9 @@
         margin: 0 auto;
     }
 
-    /* Cards Grid */
     .cards-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
         gap: 2rem;
         margin-bottom: 3rem;
     }
@@ -244,7 +238,6 @@
         color: var(--text-secondary);
     }
 
-    /* File Upload Area */
     .upload-area {
         border: 2px dashed var(--border);
         border-radius: 15px;
@@ -300,7 +293,6 @@
         display: none;
     }
 
-    /* Button */
     .process-btn {
         width: 100%;
         padding: 1rem 2rem;
@@ -344,7 +336,6 @@
         transform: none;
     }
 
-    /* Loader */
     .loader-container {
         display: none;
         text-align: center;
@@ -371,7 +362,6 @@
         to { transform: rotate(360deg); }
     }
 
-    /* Success Notification */
     .notification {
         position: fixed;
         top: 100px;
@@ -401,47 +391,7 @@
         background: var(--error);
         box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
     }
-    
 
-    /* Stats Section */
-    .stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-top: 3rem;
-        animation: fadeInUp 1s ease;
-    }
-
-    .stat-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 15px;
-        padding: 1.5rem;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px var(--shadow);
-    }
-
-    .stat-number {
-        font-size: 2rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, var(--primary), var(--accent));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .stat-label {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        margin-top: 0.5rem;
-    }
-
-    /* Animations */
     @keyframes fadeInUp {
         from {
             opacity: 0;
@@ -464,7 +414,6 @@
         }
     }
 
-    /* Responsive Design */
     @media (max-width: 1200px) {
         .cards-grid {
             grid-template-columns: 1fr;
@@ -543,19 +492,6 @@
             font-size: 0.9rem;
         }
 
-        .stats {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-
-        .stat-card {
-            padding: 1.2rem;
-        }
-
-        .stat-number {
-            font-size: 1.5rem;
-        }
-
         .notification {
             right: 1rem;
             left: 1rem;
@@ -630,22 +566,6 @@
             letter-spacing: 0.5px;
         }
 
-        .stats {
-            grid-template-columns: 1fr;
-        }
-
-        .stat-card {
-            padding: 1rem;
-        }
-
-        .stat-number {
-            font-size: 1.8rem;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-        }
-
         .loader {
             width: 40px;
             height: 40px;
@@ -709,29 +629,6 @@
             padding: 1.2rem 0.8rem;
         }
     }
-
-    /* Landscape Mobile */
-    @media (max-height: 600px) and (orientation: landscape) {
-        .hero {
-            margin-bottom: 2rem;
-        }
-
-        .hero h2 {
-            font-size: 1.5rem;
-        }
-
-        .hero p {
-            font-size: 0.9rem;
-        }
-
-        .main-container {
-            margin: 1.5rem auto;
-        }
-
-        .stats {
-            margin-top: 2rem;
-        }
-    }
 </style>
 
 <script>
@@ -749,7 +646,6 @@
     function showNotification(message, isError = false) {
         const notification = document.getElementById('notification');
 
-        // Reset timeout if already active
         if (notification.hideTimeout) clearTimeout(notification.hideTimeout);
 
         notification.classList.remove('show', 'error');
@@ -764,61 +660,46 @@
         }, 3500);
     }
 
-    /* ========================================================
-       FILE UPLOAD + BUTTON ENABLE/DISABLE LOGIC 
-       ======================================================== */
     function setupFileUpload(uploadAreaId, inputId, fileNameId, buttonId) {
         const uploadArea = document.getElementById(uploadAreaId);
         const fileInput = document.getElementById(inputId);
         const fileName = document.getElementById(fileNameId);
         const submitBtn = document.getElementById(buttonId);
 
-        /* ⭐ Disable button by default */
         submitBtn.disabled = true;
 
-        /* ⭐ Enable button ONLY when file selected */
         function enableBtn() {
             if (fileInput.files.length > 0) {
                 fileName.textContent = `📄 ${fileInput.files[0].name}`;
                 fileName.style.display = 'block';
-
-                submitBtn.disabled = false;   // ENABLE BUTTON
+                submitBtn.disabled = false;
             }
         }
 
-        // Click to upload
         uploadArea.addEventListener('click', () => fileInput.click());
 
-        // Drag over
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
         });
 
-        // Drag leave
         uploadArea.addEventListener('dragleave', () => {
             uploadArea.classList.remove('dragover');
         });
 
-        // Drop file
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
 
             if (e.dataTransfer.files.length > 0) {
                 fileInput.files = e.dataTransfer.files;
-                enableBtn();  // enable after drop
+                enableBtn();
             }
         });
 
-        // Normal file selection
         fileInput.addEventListener('change', enableBtn);
     }
 
-
-    /* ========================================================
-       PROCESS FILE
-       ======================================================== */
     async function processFile(formId, route, loaderId, btnId, outputFilename) {
         event.preventDefault();
 
@@ -854,15 +735,12 @@
 
             processedCount++;
             successCount++;
-            document.getElementById('processed-count').textContent = processedCount;
-            document.getElementById('success-count').textContent = successCount;
 
-            // reset everything
             form.reset();
             const fileNameDisplay = form.querySelector('.file-name');
             if (fileNameDisplay) fileNameDisplay.style.display = 'none';
 
-            submitBtn.disabled = true; // Disable again after reset
+            submitBtn.disabled = true;
 
         } catch (err) {
             showNotification('❌ Error: ' + err.message, true);
@@ -873,30 +751,23 @@
         }
     }
 
-    /* ========================================================
-       ON PAGE LOAD
-       ======================================================== */
     window.onload = () => {
-        // theme
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'light') {
             document.body.classList.add('light-mode');
             document.querySelector('.toggle-slider').textContent = '☀️';
         }
 
-        /* ⭐ Hook upload + button logic */
         setupFileUpload('docx-upload-area', 'docx-input', 'docx-file-name', 'docx-btn');
         setupFileUpload('pdf-upload-area', 'pdf-input', 'pdf-file-name', 'pdf-btn');
     };
 </script>
-
 
 </head>
 <body>
 
 <div class="bg-animated"></div>
 
-<!-- Header -->
 <header>
     <div class="header-content">
         <div class="logo-section">
@@ -908,34 +779,30 @@
     </div>
 </header>
 
-<!-- Theme Toggle (Fixed Position) -->
 <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
     <div class="toggle-slider">🌙</div>
 </button>
 
-<!-- Main Content -->
 <div class="main-container">
     
-    <!-- Hero -->
     <div class="hero">
         <h2>Survey Processing Portal</h2>
         <p>Advanced document processing system for educational surveys. Upload your files and get professionally formatted results instantly.</p>
     </div>
 
-    <!-- Processing Cards -->
     <div class="cards-grid">
         
-        <!-- DOCX Processing -->
+        <!-- IG Campus Processing -->
         <div class="process-card">
             <div class="card-header">
                 <div class="card-icon">📊</div>
                 <div class="card-title">
-                    <h3>Process Survey DOCX</h3>
-                    <p>Convert survey documents to formatted reports</p>
+                    <h3>Process Survey</h3>
+                    <p>Convert IG-I, IG-II, IG-III,Grade-1 etc survey documents</p>
                 </div>
             </div>
 
-            <form id="docx-form" onsubmit="processFile('docx-form', '/upload', 'docx-loader', 'docx-btn', 'FINAL_DYNAMIC_TABLES.docx')">
+            <form id="docx-form" onsubmit="processFile('docx-form', '/upload', 'docx-loader', 'docx-btn', 'IG_PROCESSED.docx')">
                 <div class="upload-area" id="docx-upload-area">
                     <div class="upload-icon">📁</div>
                     <div class="upload-text">
@@ -957,92 +824,55 @@
             </form>
         </div>
 
-        <!-- PDF Conversion -->
-        <div class="process-card">
-            <div class="card-header">
-                <div class="card-icon">📄</div>
-                <div class="card-title">
-                    <h3>Convert PDF to DOCX</h3>
-                    <p>Extract and convert PDF surveys to editable format</p>
-                </div>
-            </div>
-
-         <form id="pdf-form" onsubmit="processFile('pdf-form', '/convert_pdf', 'pdf-loader', 'pdf-btn', 'PDF_CONVERTED.docx')">
-
-    <!-- Campus Name Input (styled like built-in UI elements) -->
-    <div style="margin-bottom: 1.8rem;">
-        <label style="
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-            display: block;
-        ">
-            Campus Name (optional):
-        </label>
-
-        <input type="text" name="campus_name" placeholder="Enter campus name"
-            style="
-                width: 100%;
-                padding: 14px 16px;
-                border-radius: 12px;
-                border: 1px solid var(--border);
-                background: var(--bg-card);
-                color: var(--text-primary);
-                font-size: 0.95rem;
-                outline: none;
-            ">
-    </div>
-
-    <!-- Upload area -->
-    <div class="upload-area" id="pdf-upload-area">
-        <div class="upload-icon">📑</div>
-        <div class="upload-text">
-            <h4>Click to upload or drag & drop</h4>
-            <p>Supports .pdf files only</p>
-        </div>
-        <div class="file-name" id="pdf-file-name"></div>
-    </div>
-
-    <input type="file" id="pdf-input" name="pdf_file" accept=".pdf" required>
     
-    <button type="submit" class="process-btn" id="pdf-btn">
-        Convert to DOCX
-    </button>
 
-    <div class="loader-container" id="pdf-loader">
-        <div class="loader"></div>
-        <p class="loader-text">Converting your PDF...</p>
-    </div>
-</form>
-</div> 
-
-
-    <!-- Stats -->
-    <div class="stats">
-        <div class="stat-card">
-            <div class="stat-number" id="processed-count">0</div>
-            <div class="stat-label">Files Processed</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number" id="success-count">0</div>
-            <div class="stat-label">Successful Conversions</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">⚡</div>
-            <div class="stat-label">Lightning Fast</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">🔒</div>
-            <div class="stat-label">Secure Processing</div>
+        <!-- PDF Conversion -->
+        <!-- PDF Conversion -->
+<div class="process-card">
+    <div class="card-header">
+        <div class="card-icon">📄</div>
+        <div class="card-title">
+            <h3>Convert PDF to DOCX</h3>
+            <p>Extract and convert PDF surveys to editable format</p>
         </div>
     </div>
 
+    <form id="pdf-form" 
+          onsubmit="processFile('pdf-form', '/convert_pdf', 'pdf-loader', 'pdf-btn', 'PDF_CONVERTED.docx', event)">
+        
+        <div style="margin-bottom: 1.8rem;">
+            <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+                Campus Name (optional):
+            </label>
+            <input type="text" name="campus_name" placeholder="Enter campus name"
+                style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 0.95rem;">
+        </div>
+
+        <div class="upload-area" id="pdf-upload-area">
+            <div class="upload-icon">📑</div>
+            <div class="upload-text">
+                <h4>Click to upload or drag & drop</h4>
+                <p>Supports .pdf files only</p>
+            </div>
+            <div class="file-name" id="pdf-file-name"></div>
+        </div>
+
+        <input type="file" id="pdf-input" name="pdf_file" accept=".pdf" required>
+
+        <button type="submit" class="process-btn" id="pdf-btn" disabled>
+            Convert to DOCX
+        </button>
+
+        <div class="loader-container" id="pdf-loader">
+            <div class="loader"></div>
+            <p class="loader-text">Converting your PDF...</p>
+        </div>
+
+    </form>
 </div>
 
-<!-- Notification -->
+
 <div id="notification" class="notification">Success!</div>
-
-
 
 </body>
 </html>
