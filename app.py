@@ -96,7 +96,7 @@ def extract_table(tb, qnum, campus, data_dict):
     for row in tb.rows[1:]:
         name = row.cells[name_col].text.strip()
 
-        if not name or "none of the above" in name.lower():
+        if not name:
             continue
 
         # Normalize names
@@ -503,8 +503,9 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", campus_name=
 
         sorted_teachers = sorted(
             grouped.items(),
-            key=lambda x: (x[0].lower() == "none of the above", x[0].lower())
-        )
+            key=lambda x: (x[0].lower().startswith("none of the above"), x[0].lower())
+)
+
 
         for teacher, count in sorted_teachers:
             row = table.add_row().cells
