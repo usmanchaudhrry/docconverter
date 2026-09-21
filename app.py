@@ -1,4 +1,3 @@
-from flask import Flask, request, send_file, render_template
 import os
 import re
 from collections import defaultdict
@@ -8,14 +7,17 @@ from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from datetime import datetime
+from flask import Flask, request, send_file, render_template
 
 app = Flask(__name__)
 
-UPLOAD_FOLDER = "uploads"
-OUTPUT_FILE = "FINAL_DYNAMIC_TABLES.docx"
-PDF_OUTPUT = "PDF_TO_DOCX_OUTPUT.docx"
-GRADE_OUTPUT = "GRADE_PROCESSED.docx"
+# Use /tmp for Vercel (serverless writable directory)
+UPLOAD_FOLDER = "/tmp/uploads"
+OUTPUT_FILE = "/tmp/FINAL_DYNAMIC_TABLES.docx"
+PDF_OUTPUT = "/tmp/PDF_TO_DOCX_OUTPUT.docx"
+GRADE_OUTPUT = "/tmp/GRADE_PROCESSED.docx"
 
+# Create upload folder if it doesn't exist
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
