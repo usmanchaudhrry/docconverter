@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Flask
+instance/
+.webassets-cache
+
+# Uploads and generated files
+uploads/
+*.docx
+*.pdf
+FINAL_DYNAMIC_TABLES.docx
+PDF_CONVERTED.docx
+GRADE_PROCESSED.docx
+PDF_TO_DOCX_OUTPUT.docx
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.flaskenv
+
+# Logs
+*.log

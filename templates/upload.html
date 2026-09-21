@@ -803,6 +803,49 @@
             </div>
 
             <form id="docx-form" onsubmit="processFile('docx-form', '/upload', 'docx-loader', 'docx-btn', 'IG_PROCESSED.docx')">
+                
+                <!-- Grade Section Information -->
+                <div style="margin-bottom: 1.8rem;">
+                    <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+                        Campus Name:
+                    </label>
+                    <input type="text" name="campus_name" placeholder="e.g., Primary Campus"
+                        style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 0.95rem;">
+                </div>
+
+                <div style="margin-bottom: 1.8rem;">
+                    <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+                        Grade-Section:
+                    </label>
+                    <input type="text" name="grade_section" placeholder="e.g., Grade-3 or Grade 3 - Venus"
+                        style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 0.95rem;">
+                </div>
+
+                <div style="margin-bottom: 1.8rem;">
+                    <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+                        Survey Date:
+                    </label>
+                    <input type="date" name="survey_date"
+                        style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 0.95rem;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.8rem;">
+                    <div>
+                        <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+                            Total Students:
+                        </label>
+                        <input type="number" name="total_students" placeholder="26" min="0"
+                            style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 0.95rem;">
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+                            Total Responses:
+                        </label>
+                        <input type="number" name="total_responses" placeholder="25" min="0"
+                            style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 0.95rem;">
+                    </div>
+                </div>
+
                 <div class="upload-area" id="docx-upload-area">
                     <div class="upload-icon">📁</div>
                     <div class="upload-text">
@@ -842,10 +885,43 @@
         
         <div style="margin-bottom: 1.8rem;">
             <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
-                Campus Name (optional):
+                Campus Name:
             </label>
-            <input type="text" name="campus_name" placeholder="Enter campus name"
+            <input type="text" name="campus_name" placeholder="e.g., Primary Campus"
                 style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 0.95rem;">
+        </div>
+
+        <div style="margin-bottom: 1.8rem;">
+            <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+                Grade-Section:
+            </label>
+            <input type="text" name="grade_section" placeholder="e.g., Grade-3 or Grade 3 - Venus"
+                style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 0.95rem;">
+        </div>
+
+        <div style="margin-bottom: 1.8rem;">
+            <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+                Survey Date:
+            </label>
+            <input type="date" name="survey_date"
+                style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 0.95rem;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.8rem;">
+            <div>
+                <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+                    Total Students:
+                </label>
+                <input type="number" name="total_students" placeholder="26" min="0"
+                    style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 0.95rem;">
+            </div>
+            <div>
+                <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+                    Total Responses:
+                </label>
+                <input type="number" name="total_responses" placeholder="25" min="0"
+                    style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-primary); font-size: 0.95rem;">
+            </div>
         </div>
 
         <div class="upload-area" id="pdf-upload-area">
