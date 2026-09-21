@@ -740,9 +740,8 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", grade_info=N
             continue
 
         # Regular questions - 4 columns: Teacher, Subject, Responses, %
-        # First, split teacher names and subjects, then group
-        teacher_subject_map = {}  # Store subject for each teacher
-        grouped = defaultdict(int)
+        # Store entries with subjects - keep them separate instead of grouping by teacher name only
+        teacher_data_list = []  # List of (teacher_name, subject, count)
         total = 0
         
         for teacher_full, count in entries:
@@ -755,8 +754,7 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", grade_info=N
                 teacher_name = parts[0].strip()
                 subject = parts[1].strip()
             
-            teacher_subject_map[teacher_name] = subject
-            grouped[teacher_name] += count
+            teacher_data_list.append((teacher_name, subject, count))
             total += count
 
         table = doc.add_table(rows=1, cols=4)
@@ -789,22 +787,22 @@ def convert_pdf_to_docx(pdf_path, output_path="PDF_CONVERTED.docx", grade_info=N
             run.font.color.rgb = RGBColor(255, 255, 255)
             para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
 
-        sorted_teachers = sorted(
-            grouped.items(),
+        # Sort by teacher name, with "None of the Above" at the bottom
+        sorted_data = sorted(
+            teacher_data_list,
             key=lambda x: (x[0].lower().startswith("none of the above"), x[0].lower())
         )
 
-        for teacher, count in sorted_teachers:
+        for teacher, subject, count in sorted_data:
             row = table.add_row()
             
-            # Teacher name (without subject)
+            # Teacher name
             row.cells[0].paragraphs[0].text = ""
             t_run = row.cells[0].paragraphs[0].add_run(teacher)
             t_run.font.size = Pt(10)
             
-            # Subject (extracted from teacher name)
+            # Subject
             row.cells[1].paragraphs[0].text = ""
-            subject = teacher_subject_map.get(teacher, "")
             s_run = row.cells[1].paragraphs[0].add_run(subject if subject else "-")
             s_run.font.size = Pt(10)
             
